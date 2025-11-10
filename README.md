@@ -5,7 +5,7 @@ Python FastAPI prototype that ingests a contract file, compares it against a jur
 ## Features
 
 - Upload PDF / DOCX / TXT contracts via simple web UI.
-- Load structured requirements from `contract_checklist.json`.
+- Load structured requirements from `app/data/contract_checklist.json`.
 - Call OpenRouter (`openai/gpt-4.1-mini`) for detailed evaluations, with a heuristic fallback when the API key is missing/offline.
 - Generate Markdown output in-memory and return a fake Google Drive link placeholder.
 - Prepare the Telegram notification payload; send it for real once credentials are configured.
@@ -25,7 +25,7 @@ Python FastAPI prototype that ingests a contract file, compares it against a jur
    OPENROUTER_API_KEY=sk-or-...
    OPENROUTER_MODEL=openai/gpt-4.1-mini
    TELEGRAM_BOT_TOKEN=123456:ABC
-   TELEGRAM_CHAT_ID=987654321
+   TELEGRAM_BOSS_CHAT_ID=987654321
    ```
 
    Leave tokens blank while testing to stay on the heuristic fallback.

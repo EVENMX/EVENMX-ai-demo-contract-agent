@@ -76,4 +76,4 @@ This will start a local server that mimics Vercel's serverless environment.
 - If static files aren't loading, check that the `static/` directory is in the project root
 - If templates aren't found, verify the `templates/` directory structure
 - Check Vercel function logs in the dashboard for runtime errors
-- Ensure all required files (`contract_checklist.json`, `sample_contract.txt`) are in the repository
+- Ensure `app/data/contract_checklist.json` and `app/data/sample_contract.txt` are present (they are loaded at runtime)

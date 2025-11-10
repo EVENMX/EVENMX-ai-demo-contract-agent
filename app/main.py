@@ -21,6 +21,8 @@ app = FastAPI(title="Contract Review Agent (Demo)")
 
 # Determine base directory - works in both local and Vercel environments
 # In Vercel, __file__ will be in api/, so we go up one level
+_app_dir = Path(__file__).parent
+_data_dir = _app_dir / "data"
 _base_dir = Path(__file__).parent.parent
 _static_dir = _base_dir / "static"
 _templates_dir = _base_dir / "templates"
@@ -53,7 +55,7 @@ def index(request: Request) -> HTMLResponse:
 @app.get("/sample-contract")
 def get_sample_contract() -> JSONResponse:
     """Return the sample contract content."""
-    sample_path = _base_dir / "sample_contract.txt"
+    sample_path = _data_dir / "sample_contract.txt"
     if not sample_path.exists():
         return JSONResponse({"error": "Sample contract not found"}, status_code=404)
     content = sample_path.read_text(encoding="utf-8")

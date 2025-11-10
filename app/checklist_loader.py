@@ -10,10 +10,9 @@ from .models import ChecklistSection
 class ChecklistRepository:
     def __init__(self, checklist_path: str | None = None) -> None:
         # Determine base directory - works in both local and Vercel environments
-        base_dir = Path(__file__).parent.parent
-        if checklist_path is None:
-            checklist_path = str(base_dir / "contract_checklist.json")
-        self.path = Path(checklist_path)
+        base_dir = Path(__file__).resolve().parent
+        default_path = base_dir / "data" / "contract_checklist.json"
+        self.path = Path(checklist_path) if checklist_path else default_path
         if not self.path.exists():
             raise FileNotFoundError(f"Checklist file not found at {self.path}")
         self._sections = self._load_sections()
