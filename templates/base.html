@@ -1,0 +1,25 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Contract Review Agent</title>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600&display=swap" />
+  <link rel="stylesheet" href="/static/styles.css" />
+</head>
+<body>
+  <header>
+    <h1>Contract Review Agent (Demo)</h1>
+    <p>Upload a contract, pick the jurisdiction-specific checklist, and let the agent evaluate compliance.</p>
+  </header>
+  <main>
+    {% block content %}{% endblock %}
+  </main>
+  <footer>
+    <small>Prototype for internal demos — integrate Drive, Docs, and Telegram APIs before production use.</small>
+  </footer>
+  <script>
+    {% block scripts %}{% endblock %}
+  </script>
+</body>
+</html>

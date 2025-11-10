@@ -1,0 +1,280 @@
+{% extends "base.html" %}
+{% block content %}
+<section class="card">
+  <form id="review-form" action="/review" method="post" enctype="multipart/form-data">
+    <div class="field">
+      <label for="checklist">Checklist</label>
+      <select id="checklist" name="checklist_section" required>
+        {% for section in sections %}
+          <option value="{{ section.id }}">{{ section.jurisdiction }} — {{ section.contract_type }} (v{{ section.version }})</option>
+        {% endfor %}
+      </select>
+    </div>
+    <div class="field">
+      <div style="margin-bottom: 1rem;">
+        <label style="display: inline-flex; align-items: center; cursor: pointer;">
+          <input type="checkbox" id="use-sample-contract" style="margin-right: 0.5rem;" />
+          <span>Use sample contract</span>
+        </label>
+      </div>
+      <div id="file-upload-field">
+        <label for="contract">Contract file (PDF, DOCX, or TXT)</label>
+        <input id="contract" type="file" name="contract_file" accept=".pdf,.docx,.txt" required />
+      </div>
+      <div id="sample-contract-field" style="display: none;">
+        <label for="contract-text">Sample Contract (editable)</label>
+        <textarea id="contract-text" name="contract_text" rows="20" style="width: 100%; font-family: monospace; font-size: 0.9rem; padding: 0.75rem; border: 1px solid #ddd; border-radius: 4px; resize: vertical;"></textarea>
+        <small style="display: block; margin-top: 0.5rem; color: #666;">You can edit this contract. Changes are session-only and won't affect the original sample.</small>
+      </div>
+    </div>
+    <button type="submit" id="submit-btn">Run Review</button>
+  </form>
+  {% if error %}
+    <div class="alert alert-error">{{ error }}</div>
+  {% endif %}
+</section>
+
+<div id="loading-indicator" class="loading-card" style="display: none;">
+  <div class="loading-spinner"></div>
+  <p id="loading-message" class="loading-message">Reviewing your contract...</p>
+</div>
+
+{% if result %}
+<section class="card">
+  <h2>Summary</h2>
+  <p>{{ result.evaluation.summary }}</p>
+  <div class="status-grid">
+    <div><strong>✅</strong><span>{{ result.evaluation.status_counts()['✅'] }} compliant</span></div>
+    <div><strong>⚠️</strong><span>{{ result.evaluation.status_counts()['⚠️'] }} needs review</span></div>
+    <div><strong>❌</strong><span>{{ result.evaluation.status_counts()['❌'] }} non-compliant</span></div>
+  </div>
+  <h3>Top Findings</h3>
+  <ul>
+    {% for item in result.evaluation.top_issues() %}
+      <li><span class="status">{{ item.status }}</span> <strong>{{ item.description }}</strong> — {{ item.notes }}</li>
+    {% endfor %}
+  </ul>
+  <h3>Detailed Checklist</h3>
+  <table>
+    <thead>
+      <tr>
+        <th>Category</th>
+        <th>Requirement</th>
+        <th>Status</th>
+        <th>Notes</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for item in result.evaluation.items %}
+        <tr>
+          <td>{{ item.category }}</td>
+          <td>{{ item.description }}</td>
+          <td>{{ item.status }}</td>
+          <td>{{ item.notes }}</td>
+        </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+  <h3>Artifacts</h3>
+  <ul>
+    <li>Report stored at: <code>{{ result.report.local_path }}</code></li>
+    <li>Drive link: <a href="{{ result.drive_link }}" target="_blank" rel="noopener">{{ result.drive_link }}</a></li>
+    <li>Telegram: {% if result.telegram_result.sent %}Message sent (id {{ result.telegram_result.message_id }}){% else %}{{ result.telegram_result.error }}{% endif %}</li>
+  </ul>
+</section>
+{% endif %}
+{% endblock %}
+
+{% block scripts %}
+(function() {
+  const form = document.getElementById('review-form');
+  const loadingIndicator = document.getElementById('loading-indicator');
+  const loadingMessage = document.getElementById('loading-message');
+  const submitBtn = document.getElementById('submit-btn');
+  const formCard = document.querySelector('.card');
+  
+  const funnyMessages = [
+    "It's better to wait a few seconds than sign a bad contract...",
+    "Reading fine print so you don't have to...",
+    "Checking if the landlord is trying to pull a fast one...",
+    "Counting the ways this contract could go wrong...",
+    "Looking for loopholes like a contract detective...",
+    "Reviewing clauses with the intensity of a legal eagle...",
+    "Making sure you're not signing your life away...",
+    "Double-checking that 'reasonable' actually means reasonable...",
+    "Ensuring the small print isn't hiding anything fun...",
+    "Verifying that 'standard terms' are actually standard...",
+    "Cross-referencing with the checklist of doom...",
+    "Making sure the rent isn't going to the moon...",
+    "Checking if termination clauses are actually fair...",
+    "Reviewing faster than a lawyer charges per hour...",
+    "Ensuring your deposit won't mysteriously disappear...",
+    "Looking for red flags like a contract bloodhound...",
+    "Making sure 'flexible terms' aren't just marketing speak...",
+    "Checking that notice periods make actual sense...",
+    "Verifying the contract isn't written in invisible ink...",
+    "Ensuring you're not agreeing to clean the landlord's car..."
+  ];
+  
+  let messageIndex = 0;
+  let messageInterval;
+  
+  function showLoading() {
+    loadingIndicator.style.display = 'block';
+    submitBtn.disabled = true;
+    submitBtn.textContent = 'Reviewing...';
+    
+    // Scroll to loading indicator
+    loadingIndicator.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    
+    // Start rotating messages
+    loadingMessage.textContent = funnyMessages[0];
+    messageIndex = 0;
+    messageInterval = setInterval(() => {
+      messageIndex = (messageIndex + 1) % funnyMessages.length;
+      loadingMessage.textContent = funnyMessages[messageIndex];
+    }, 3500);
+  }
+  
+  function hideLoading() {
+    loadingIndicator.style.display = 'none';
+    submitBtn.disabled = false;
+    submitBtn.textContent = 'Run Review';
+    if (messageInterval) {
+      clearInterval(messageInterval);
+    }
+  }
+  
+  function removeExistingResults() {
+    // Remove any existing result sections and error messages
+    const existingResults = document.querySelectorAll('section.card:not(:first-of-type)');
+    existingResults.forEach(section => {
+      if (section.querySelector('h2') || section.querySelector('.alert-error')) {
+        section.remove();
+      }
+    });
+    
+    // Remove error messages from form card
+    const existingErrors = formCard.querySelectorAll('.alert-error');
+    existingErrors.forEach(error => error.remove());
+  }
+  
+  // Handle contract source selection
+  const useSampleCheckbox = document.getElementById('use-sample-contract');
+  const fileUploadField = document.getElementById('file-upload-field');
+  const sampleContractField = document.getElementById('sample-contract-field');
+  const contractFileInput = document.getElementById('contract');
+  const contractTextarea = document.getElementById('contract-text');
+  
+  // Ensure all elements exist
+  if (useSampleCheckbox && fileUploadField && sampleContractField && contractFileInput && contractTextarea) {
+    // Load sample contract when sample option is selected
+    let sampleContractLoaded = false;
+    
+    function toggleContractSource() {
+      console.log('Toggle called, checked:', useSampleCheckbox.checked);
+      if (useSampleCheckbox.checked) {
+        // Use sample contract
+        fileUploadField.style.display = 'none';
+        sampleContractField.style.display = 'block';
+        console.log('Showing sample contract field');
+        contractFileInput.disabled = true;
+        contractFileInput.removeAttribute('required');
+        contractTextarea.required = true;
+        
+        // Load sample contract if not already loaded
+        if (!sampleContractLoaded) {
+          fetch('/sample-contract')
+            .then(response => response.json())
+            .then(data => {
+              if (data.content) {
+                contractTextarea.value = data.content;
+                sampleContractLoaded = true;
+              }
+            })
+            .catch(error => {
+              console.error('Error loading sample contract:', error);
+            });
+        }
+      } else {
+        // Use file upload (default)
+        fileUploadField.style.display = 'block';
+        sampleContractField.style.display = 'none';
+        contractFileInput.disabled = false;
+        contractFileInput.required = true;
+        contractTextarea.removeAttribute('required');
+      }
+    }
+    
+    useSampleCheckbox.addEventListener('change', toggleContractSource);
+  }
+  
+  form.addEventListener('submit', async function(e) {
+    e.preventDefault(); // Prevent default form submission
+    
+    const formData = new FormData(form);
+    
+    // Remove contract_file if using sample contract
+    if (useSampleCheckbox && useSampleCheckbox.checked) {
+      formData.delete('contract_file');
+    } else {
+      formData.delete('contract_text');
+    }
+    
+    // Remove any previous results
+    removeExistingResults();
+    
+    showLoading();
+    
+    try {
+      const response = await fetch('/review', {
+        method: 'POST',
+        body: formData
+      });
+      
+      const html = await response.text();
+      
+      // Parse the HTML response
+      const parser = new DOMParser();
+      const doc = parser.parseFromString(html, 'text/html');
+      
+      // Hide loading
+      hideLoading();
+      
+      // Check for errors
+      const errorDiv = doc.querySelector('.alert-error');
+      if (errorDiv) {
+        const errorContainer = document.createElement('div');
+        errorContainer.className = 'alert alert-error';
+        errorContainer.textContent = errorDiv.textContent.trim();
+        formCard.appendChild(errorContainer);
+        return;
+      }
+      
+      // Extract result section
+      const resultSection = doc.querySelector('section.card:last-of-type');
+      if (resultSection && resultSection.querySelector('h2')) {
+        // Clone and insert the result section
+        const clonedResult = resultSection.cloneNode(true);
+        formCard.insertAdjacentElement('afterend', clonedResult);
+        
+        // Scroll to results
+        clonedResult.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      }
+      
+    } catch (error) {
+      hideLoading();
+      const errorContainer = document.createElement('div');
+      errorContainer.className = 'alert alert-error';
+      errorContainer.textContent = 'Error submitting form: ' + error.message;
+      formCard.appendChild(errorContainer);
+      console.error('Form submission error:', error);
+    }
+  });
+  
+  // Hide loading if page loads with results (back button scenario)
+  if (document.querySelector('#loading-indicator') && !document.querySelector('section.card:last-of-type h2')) {
+    hideLoading();
+  }
+})();
+{% endblock %}

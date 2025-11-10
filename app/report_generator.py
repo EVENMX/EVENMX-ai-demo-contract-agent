@@ -1,0 +1,104 @@
+from __future__ import annotations
+
+from datetime import datetime, timezone
+from pathlib import Path
+from textwrap import dedent
+
+from .config import get_settings
+from .models import ChecklistEvaluation, ChecklistSection, ReportArtifact
+
+
+class ReportGenerator:
+    def __init__(self) -> None:
+        self.settings = get_settings()
+        self.output_dir = Path(self.settings.report_storage_dir)
+        # Only create directory if it's writable (not in serverless environment)
+        try:
+            self.output_dir.mkdir(parents=True, exist_ok=True)
+            self._can_write_files = True
+        except (OSError, PermissionError):
+            self._can_write_files = False
+
+    def generate(
+        self,
+        *,
+        contract_title: str,
+        section: ChecklistSection,
+        evaluation: ChecklistEvaluation,
+    ) -> ReportArtifact:
+        timestamp = datetime.now(timezone.utc)
+        filename = f"{_slugify(contract_title)}-{timestamp:%Y%m%d-%H%M%S}.md"
+        markdown = self._build_markdown(contract_title, section, evaluation, timestamp)
+        
+        # Try to write file if possible, otherwise use in-memory path
+        if self._can_write_files:
+            path = self.output_dir / filename
+            try:
+                path.write_text(markdown, encoding="utf-8")
+                local_path = str(path)
+            except (OSError, PermissionError):
+                # Fallback to in-memory path if write fails
+                local_path = f"in-memory://{filename}"
+        else:
+            # Serverless environment - use in-memory path
+            local_path = f"in-memory://{filename}"
+        
+        return ReportArtifact(
+            contract_title=contract_title,
+            generated_at=timestamp,
+            local_path=local_path,
+            evaluation=evaluation,
+        )
+
+    def _build_markdown(
+        self,
+        contract_title: str,
+        section: ChecklistSection,
+        evaluation: ChecklistEvaluation,
+        timestamp: datetime,
+    ) -> str:
+        counts = evaluation.status_counts()
+        lines = [
+            f"# Contract Review Report — {contract_title}",
+            "",
+            f"*Generated:* {timestamp:%Y-%m-%d %H:%M UTC}",
+            f"*Jurisdiction:* {section.jurisdiction}",
+            f"*Contract type:* {section.contract_type}",
+            f"*Checklist version:* {section.version}",
+            "",
+            "## Summary",
+            evaluation.summary,
+            "",
+            "## Status Overview",
+            f"- ✅ Compliant: {counts['✅']}",
+            f"- ⚠️ Needs attention: {counts['⚠️']}",
+            f"- ❌ Non-compliant: {counts['❌']}",
+            "",
+            "## Detailed Findings",
+            "| Category | Requirement | Status | Notes |",
+            "| --- | --- | --- | --- |",
+        ]
+        for item in evaluation.items:
+            lines.append(
+                f"| {item.category.title()} | {item.description} | {item.status} | {item.notes.replace('|', '/')} |"
+            )
+        lines.append("")
+        lines.append("---")
+        lines.append(
+            dedent(
+                """
+                _This is a demo artifact. Replace the markdown-generation logic with a Google Docs API
+                integration to upload the report into Drive, then update the returned Drive link._
+                """
+            ).strip()
+        )
+        return "\n".join(lines)
+
+
+def _slugify(value: str) -> str:
+    safe = [char.lower() if char.isalnum() else "-" for char in value.strip()]
+    result = "".join(safe).strip("-") or "contract"
+    # Replace multiple consecutive dashes with a single dash
+    while "--" in result:
+        result = result.replace("--", "-")
+    return result

@@ -1,0 +1,45 @@
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+.venv/
+venv/
+ENV/
+env/
+
+# Testing
+.pytest_cache/
+.coverage
+.coverage.*
+htmlcov/
+*.cover
+.hypothesis/
+tests/
+pytest.ini
+
+# Reports (not needed in deployment)
+reports/
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Environment
+.env.local
+.env.*.local
+
+# Documentation (optional - keep if you want it in deployment)
+# VERCEL_DEPLOY.md
+
+# Sample files (optional - remove if not needed for demo)
+# sample-residential-agreement.pdf
+

@@ -1,0 +1,60 @@
+{
+  "sections": [
+    {
+      "id": "QLD_COMMERCIAL_LEASE",
+      "jurisdiction": "Queensland",
+      "contract_type": "Commercial Lease",
+      "version": "1.0",
+      "legal_requirements": {
+        "parties_identified": "Clearly identify landlord and tenant legal entities, including ABN/ACN where applicable.",
+        "premises_description": "Describe the leased premises with address, boundaries, and inclusions.",
+        "lease_term": "State commencement, expiry, and any option periods.",
+        "rent_details": "Detail base rent, payment frequency, and method.",
+        "rent_review_clause": "Include mechanism and schedule for rent reviews.",
+        "outgoings_clause": "Define recoverable outgoings and disclosure requirements per QLD Retail Shop Leases Act.",
+        "permitted_use": "Specify permitted business activities within premises.",
+        "assignment_terms": "Outline conditions and approvals for assignment/subletting.",
+        "termination_clause": "Describe termination rights, breach remedies, and notice periods.",
+        "registration_requirement": "Clarify obligation to register lease if term exceeds 3 years in QLD." 
+      },
+      "company_requirements": {
+        "minimum_notice_period_days": "Provide at least 30 days written notice for landlord-initiated changes.",
+        "maximum_security_deposit_months": "Security deposit must not exceed 2 months of gross rent.",
+        "require_maintenance_schedule": "Attach preventative maintenance responsibilities and schedule.",
+        "prohibit_auto_renewal": "Do not include automatic renewal without explicit tenant opt-in.",
+        "require_force_majeure_clause": "Include force majeure terms covering natural disasters and pandemics.",
+        "environmental_compliance_clause": "Address environmental compliance and hazardous materials removal." 
+      },
+      "metadata": {
+        "last_updated": "2024-05-18",
+        "author": "Legal Ops Team"
+      }
+    },
+    {
+      "id": "QLD_RESIDENTIAL_RENTAL",
+      "jurisdiction": "Queensland",
+      "contract_type": "Residential Tenancy",
+      "version": "0.9",
+      "legal_requirements": {
+        "parties_identified": "List landlord/agent and tenant full names and contact details.",
+        "premises_condition_report": "Attach Entry Condition Report per RTRA Act.",
+        "rent_details": "Specify rent amount, frequency, payment method, and increases.",
+        "bond_lodgement": "State rental bond amount and RTA lodgement obligations.",
+        "utilities_obligations": "Clarify responsibility for utilities, water charges, and metering.",
+        "notice_requirements": "Detail minimum notice periods for entry, termination, and rent increases.",
+        "maintenance_obligations": "Outline repair/maintenance responsibilities and emergency processes.",
+        "minimum_housing_standards": "Reference compliance with QLD Minimum Housing Standards." 
+      },
+      "company_requirements": {
+        "support_contact": "Provide 24/7 tenant support contact.",
+        "insurance_requirements": "Confirm landlord insurance coverage for property and liability.",
+        "dispute_resolution_process": "Include internal escalation path before RTA dispute.",
+        "data_privacy": "Commit to protecting tenant personal information per company policy." 
+      },
+      "metadata": {
+        "last_updated": "2024-04-02",
+        "author": "Residential PMO"
+      }
+    }
+  ]
+}
