@@ -18,6 +18,9 @@ reports/
 # Documentation
 README.md
 VERCEL_DEPLOY.md
+CHANGELOG_VERCEL_FIX.md
+DEPLOY_QUICK_START.md
+VERCEL_SETUP.md
 
 # IDE
 .vscode/
