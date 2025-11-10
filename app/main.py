@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import os
+import sys
 import tempfile
 from pathlib import Path
 
@@ -14,9 +15,20 @@ from .config import get_settings
 from .ingestion import EmptyDocumentError, UnsupportedFileTypeError
 from .review_service import ReviewService
 
+print("=== DEBUG: app.main module loading started", file=sys.stderr)
+
 settings = get_settings()
-repo = ChecklistRepository()
+print("=== DEBUG: Settings loaded", file=sys.stderr)
+
+try:
+    repo = ChecklistRepository()
+    print("=== DEBUG: ChecklistRepository loaded", file=sys.stderr)
+except Exception as e:
+    print(f"=== ERROR: Failed to load ChecklistRepository: {e}", file=sys.stderr)
+    raise
+
 review_service = ReviewService(repo)
+print("=== DEBUG: ReviewService initialized", file=sys.stderr)
 
 app = FastAPI(title="Contract Review Agent (Demo)")
 
@@ -24,22 +36,38 @@ app = FastAPI(title="Contract Review Agent (Demo)")
 project_root = os.environ.get("PROJECT_ROOT")
 if project_root:
     _base_dir = Path(project_root)
+    print(f"=== DEBUG: Using PROJECT_ROOT: {project_root}", file=sys.stderr)
 else:
     _base_dir = Path(__file__).resolve().parent.parent
+    print(f"=== DEBUG: Using relative path: {_base_dir}", file=sys.stderr)
 
 _app_dir = _base_dir / "app"
 _data_dir = _app_dir / "data"
 _static_dir = _base_dir / "static"
 _templates_dir = _base_dir / "templates"
 
+print(f"=== DEBUG: Paths configured:", file=sys.stderr)
+print(f"  - Base dir: {_base_dir}", file=sys.stderr)
+print(f"  - App dir: {_app_dir}", file=sys.stderr)
+print(f"  - Data dir: {_data_dir}", file=sys.stderr)
+print(f"  - Static dir: {_static_dir} (exists: {_static_dir.exists()})", file=sys.stderr)
+print(f"  - Templates dir: {_templates_dir} (exists: {_templates_dir.exists()})", file=sys.stderr)
+
 # Mount static files if directory exists
 if _static_dir.exists():
     app.mount("/static", StaticFiles(directory=str(_static_dir)), name="static")
+    print("=== DEBUG: Static files mounted", file=sys.stderr)
+else:
+    print("=== WARNING: Static directory not found, skipping mount", file=sys.stderr)
 
 # Initialize templates
 if not _templates_dir.exists():
+    print(f"=== ERROR: Templates directory not found at {_templates_dir}", file=sys.stderr)
     raise RuntimeError(f"Templates directory not found at {_templates_dir}")
 templates = Jinja2Templates(directory=str(_templates_dir))
+print("=== DEBUG: Templates initialized", file=sys.stderr)
+
+print("=== DEBUG: app.main module loading completed successfully", file=sys.stderr)
 
 
 @app.get("/healthz")
