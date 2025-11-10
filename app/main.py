@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import os
 import tempfile
 from pathlib import Path
 
@@ -20,16 +21,24 @@ review_service = ReviewService(repo)
 app = FastAPI(title="Contract Review Agent (Demo)")
 
 # Determine base directory - works in both local and Vercel environments
-# In Vercel, __file__ will be in api/, so we go up one level
-_app_dir = Path(__file__).parent
+project_root = os.environ.get("PROJECT_ROOT")
+if project_root:
+    _base_dir = Path(project_root)
+else:
+    _base_dir = Path(__file__).resolve().parent.parent
+
+_app_dir = _base_dir / "app"
 _data_dir = _app_dir / "data"
-_base_dir = Path(__file__).parent.parent
 _static_dir = _base_dir / "static"
 _templates_dir = _base_dir / "templates"
 
 # Mount static files if directory exists
 if _static_dir.exists():
     app.mount("/static", StaticFiles(directory=str(_static_dir)), name="static")
+
+# Initialize templates
+if not _templates_dir.exists():
+    raise RuntimeError(f"Templates directory not found at {_templates_dir}")
 templates = Jinja2Templates(directory=str(_templates_dir))
 
 

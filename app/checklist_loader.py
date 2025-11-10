@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import json
+import os
 from pathlib import Path
 from typing import Dict, List
 
@@ -10,11 +11,19 @@ from .models import ChecklistSection
 class ChecklistRepository:
     def __init__(self, checklist_path: str | None = None) -> None:
         # Determine base directory - works in both local and Vercel environments
-        base_dir = Path(__file__).resolve().parent
-        default_path = base_dir / "data" / "contract_checklist.json"
-        self.path = Path(checklist_path) if checklist_path else default_path
+        if checklist_path:
+            self.path = Path(checklist_path)
+        else:
+            # Try to use PROJECT_ROOT env var (set in Vercel), otherwise use relative path
+            project_root = os.environ.get("PROJECT_ROOT")
+            if project_root:
+                base_dir = Path(project_root) / "app"
+            else:
+                base_dir = Path(__file__).resolve().parent
+            self.path = base_dir / "data" / "contract_checklist.json"
+        
         if not self.path.exists():
-            raise FileNotFoundError(f"Checklist file not found at {self.path}")
+            raise FileNotFoundError(f"Checklist file not found at {self.path}. Current dir: {Path.cwd()}")
         self._sections = self._load_sections()
 
     def _load_sections(self) -> Dict[str, ChecklistSection]:

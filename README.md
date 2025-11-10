@@ -9,6 +9,11 @@ Python FastAPI prototype that ingests a contract file, compares it against a jur
 - Call OpenRouter (`openai/gpt-4.1-mini`) for detailed evaluations, with a heuristic fallback when the API key is missing/offline.
 - Generate Markdown output in-memory and return a fake Google Drive link placeholder.
 - Prepare the Telegram notification payload; send it for real once credentials are configured.
+- **Vercel-ready**: Deploy to Vercel serverless platform with proper file path handling.
+
+## Deployment
+
+📦 **Deploy to Vercel**: See [VERCEL_DEPLOY.md](./VERCEL_DEPLOY.md) and [VERCEL_SETUP.md](./VERCEL_SETUP.md) for complete deployment instructions and troubleshooting.
 
 ## Quickstart
 
@@ -45,7 +50,66 @@ Python FastAPI prototype that ingests a contract file, compares it against a jur
 - **LLM prompts**: adjust `app/llm_agent.py` to include retrieval-augmented snippets or to work with your preferred agent stack (LangChain, LlamaIndex, Autogen, etc.).
 - **Document parsing**: `app/ingestion.py` currently covers PDFs via pdfplumber and DOCX via python-docx; add OCR or Google Drive export for Google Docs support.
 
-## Testing notes
+## Testing
+
+### Local Testing
 
 - Drop sample contracts in `./samples` (create as needed) and use the Residential vs Commercial checklist options to see different outputs.
 - The Telegram + Drive steps will gracefully log warnings until credentials are supplied, so the end-to-end UI remains usable in a demo environment.
+
+### Run Tests
+
+```bash
+# Activate virtual environment
+source .venv/bin/activate
+
+# Run all tests
+pytest
+
+# Run with coverage
+pytest --cov=app --cov-report=html
+```
+
+### Test on Vercel Locally
+
+```bash
+# Install Vercel CLI
+npm i -g vercel
+
+# Run locally (simulates Vercel environment)
+vercel dev
+```
+
+## Project Structure
+
+```
+.
+├── api/
+│   └── index.py              # Vercel serverless function entry point
+├── app/
+│   ├── checklist_loader.py   # Loads contract checklist
+│   ├── config.py             # Configuration and settings
+│   ├── data/
+│   │   ├── contract_checklist.json  # Contract requirements
+│   │   └── sample_contract.txt      # Sample for testing
+│   ├── drive_client.py       # Google Drive integration
+│   ├── ingestion.py          # Document parsing (PDF, DOCX, TXT)
+│   ├── llm_agent.py          # OpenRouter LLM integration
+│   ├── main.py               # FastAPI application
+│   ├── models.py             # Data models
+│   ├── report_generator.py   # Markdown report generation
+│   ├── review_service.py     # Main contract review logic
+│   └── telegram_client.py    # Telegram bot integration
+├── static/
+│   └── styles.css            # Web UI styles
+├── templates/
+│   ├── base.html             # Base template
+│   └── index.html            # Main UI template
+├── tests/                    # Test suite
+├── vercel.json               # Vercel configuration
+├── .vercelignore             # Files to exclude from deployment
+├── requirements.txt          # Python dependencies
+├── README.md                 # This file
+├── VERCEL_DEPLOY.md          # Deployment guide
+└── VERCEL_SETUP.md           # Setup & troubleshooting guide
+```

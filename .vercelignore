@@ -1,45 +1,34 @@
-# Python
-__pycache__/
-*.py[cod]
-*$py.class
-*.so
-.Python
-.venv/
-venv/
-ENV/
-env/
-
-# Testing
+# Tests
+tests/
+pytest.ini
 .pytest_cache/
 .coverage
 .coverage.*
 htmlcov/
-*.cover
-.hypothesis/
-tests/
-pytest.ini
 
-# Reports (not needed in deployment)
+# Development
+.venv/
+venv/
+__pycache__/
+*.pyc
+
+# Reports (generated files)
 reports/
+
+# Documentation
+README.md
+VERCEL_DEPLOY.md
 
 # IDE
 .vscode/
 .idea/
-*.swp
-*.swo
-*~
 
 # OS
 .DS_Store
-Thumbs.db
 
-# Environment
-.env.local
-.env.*.local
+# Git
+.git/
+.gitignore
 
-# Documentation (optional - keep if you want it in deployment)
-# VERCEL_DEPLOY.md
-
-# Sample files (optional - remove if not needed for demo)
-# sample-residential-agreement.pdf
-
+# Samples (not needed in production)
+sample-residential-agreement.pdf
