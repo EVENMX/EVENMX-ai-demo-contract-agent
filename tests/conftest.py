@@ -118,6 +118,3 @@ def mock_env_vars(monkeypatch: pytest.MonkeyPatch) -> None:
     monkeypatch.setenv("OPENROUTER_API_KEY", "")
     monkeypatch.setenv("TELEGRAM_BOT_TOKEN", "")
     monkeypatch.setenv("TELEGRAM_BOSS_CHAT_ID", "")
-    monkeypatch.setenv("GOOGLE_DRIVE_FOLDER", "Test_Contract_Reviews")
-    monkeypatch.setenv("REPORT_STORAGE_DIR", "test_reports")
-

@@ -7,10 +7,8 @@ class Settings(BaseSettings):
 
     openrouter_api_key: str | None = None
     openrouter_model: str = "openai/gpt-5-mini"
-    google_drive_folder: str = "Contract_Reviews"
     telegram_bot_token: str | None = None
     telegram_boss_chat_id: str | None = None
-    report_storage_dir: str = "reports"
 
 
 @lru_cache

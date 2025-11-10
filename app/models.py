@@ -46,6 +46,7 @@ class ReportArtifact(BaseModel):
     contract_title: str
     generated_at: datetime
     local_path: str
+    content: str
     drive_link: Optional[str] = None
     evaluation: ChecklistEvaluation
 

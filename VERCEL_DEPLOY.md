@@ -23,8 +23,6 @@ This project is configured for deployment to Vercel. Follow these steps:
    - `OPENROUTER_MODEL` (default: `openai/gpt-5-mini`)
    - `TELEGRAM_BOT_TOKEN` (optional)
    - `TELEGRAM_BOSS_CHAT_ID` (optional)
-   - `GOOGLE_DRIVE_FOLDER` (optional, default: `Contract_Reviews`)
-   - `REPORT_STORAGE_DIR` (optional, default: `reports`)
 6. Click "Deploy"
 
 ### Option 2: Deploy via CLI
@@ -79,4 +77,3 @@ This will start a local server that mimics Vercel's serverless environment.
 - If templates aren't found, verify the `templates/` directory structure
 - Check Vercel function logs in the dashboard for runtime errors
 - Ensure all required files (`contract_checklist.json`, `sample_contract.txt`) are in the repository
-

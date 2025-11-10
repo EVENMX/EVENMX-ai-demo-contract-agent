@@ -1,24 +1,11 @@
 from __future__ import annotations
 
 from datetime import datetime, timezone
-from pathlib import Path
 from textwrap import dedent
-
-from .config import get_settings
 from .models import ChecklistEvaluation, ChecklistSection, ReportArtifact
 
 
 class ReportGenerator:
-    def __init__(self) -> None:
-        self.settings = get_settings()
-        self.output_dir = Path(self.settings.report_storage_dir)
-        # Only create directory if it's writable (not in serverless environment)
-        try:
-            self.output_dir.mkdir(parents=True, exist_ok=True)
-            self._can_write_files = True
-        except (OSError, PermissionError):
-            self._can_write_files = False
-
     def generate(
         self,
         *,
@@ -29,24 +16,14 @@ class ReportGenerator:
         timestamp = datetime.now(timezone.utc)
         filename = f"{_slugify(contract_title)}-{timestamp:%Y%m%d-%H%M%S}.md"
         markdown = self._build_markdown(contract_title, section, evaluation, timestamp)
-        
-        # Try to write file if possible, otherwise use in-memory path
-        if self._can_write_files:
-            path = self.output_dir / filename
-            try:
-                path.write_text(markdown, encoding="utf-8")
-                local_path = str(path)
-            except (OSError, PermissionError):
-                # Fallback to in-memory path if write fails
-                local_path = f"in-memory://{filename}"
-        else:
-            # Serverless environment - use in-memory path
-            local_path = f"in-memory://{filename}"
-        
+
+        local_path = f"in-memory://{filename}"
+
         return ReportArtifact(
             contract_title=contract_title,
             generated_at=timestamp,
             local_path=local_path,
+            content=markdown,
             evaluation=evaluation,
         )
 
